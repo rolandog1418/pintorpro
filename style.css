@@ -1,0 +1,213 @@
+
+        :root {
+            --primary-bg: #f0f8ff; /* Celeste pastel muy claro */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #4fc3f7; /* Celeste botón */
+            --secondary-accent: #0288d1; /* Azul detalles */
+            --danger: #ef5350;
+            --success: #66bb6a;
+            --base-font-size: 16px;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --border-color: #ddd;
+        }
+
+        /* Modo Oscuro (Clase aplicada al body) */
+        body.dark-mode {
+            --primary-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0,0,0,0.5);
+            --border-color: #444;
+        }
+        
+        /* Reset y Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-size: var(--base-font-size);
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+            height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+        }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--accent-color); color: #fff; font-weight: bold; }
+        .btn-secondary { background-color: #cfd8dc; color: #333; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-icon { width: auto; padding: 10px; border-radius: 50%; }
+
+        /* Inputs Generales */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        input:focus { outline: 2px solid var(--accent-color); border-color: transparent; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9em; color: var(--secondary-accent); }
+
+        /* VISTAS */
+        .view-section { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 1. Login / Auth */
+        .auth-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        .auth-options { display: flex; gap: 10px; margin-top: 20px; }
+
+        /* 2. Pantalla Principal Dashboard */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .brand h2 { font-size: 1.2rem; }
+
+        /* Calculadora */
+        .calc-controls {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* Switch Custom */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+            border: 1px solid var(--border-color);
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Resultado Box */
+        .result-box {
+            background: var(--secondary-accent);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
+        .price-total { font-size: 2rem; font-weight: bold; margin-top: 10px; }
+
+        /* 3. Formulario Presupuesto */
+        .task-item {
+            display: flex; gap: 5px; align-items: center; margin-bottom: 5px;
+        }
+        .task-item input[type="text"] { flex: 2; margin-bottom: 0; }
+        .task-item input[type="number"] { flex: 1; margin-bottom: 0; }
+
+        /* 4. Historial */
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .history-item {
+            background: var(--card-bg);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            position: relative;
+            transition: all 0.2s;
+            user-select: none; /* Prevenir selección de texto nativa */
+        }
+        .history-item.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        .history-item h4 { margin-bottom: 5px; }
+        .history-item p { font-size: 0.85rem; color: #666; }
+        
+        .selection-actions {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--card-bg);
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-around;
+            z-index: 100;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* 5. Configuración */
+        .settings-group { 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 15px; 
+        }
+        .settings-group h3 { margin-bottom: 10px; color: var(--secondary-accent); font-size: 1.1rem; }
+        .color-picker-row { display: flex; gap: 10px; }
+        .color-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border-color); cursor: pointer; }
+
+        /* Imprimible Oculto */
+        #printable-area {
+            position: absolute; top: -9999px; left: -9999px;
+            width: 210mm; /* A4 width */
+            background: white; color: black; padding: 20mm;
+        }
+        
+        /* Navegación Inferior (Tabs) */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--card-bg); box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            z-index: 90;
+            border-top: 1px solid var(--border-color);
+        }
+        .nav-item { text-align: center; color: #999; font-size: 0.8rem; cursor: pointer; }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; display: block; }
+        .nav-item.active { color: var(--secondary-accent); }
