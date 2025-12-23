@@ -3,8 +3,8 @@ const CACHE_NAME = 'pintorpro-v1';
 const FILES_TO_CACHE = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/app.js',
+  '/style.css',
+  '/app.js',
   '/manifest.json'
 ];
 
