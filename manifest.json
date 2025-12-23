@@ -1,7 +1,7 @@
 {
   "name": "PintorPro",
   "short_name": "PintorPro",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f0f8ff",
@@ -9,14 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "icon-192.png",  // ← Elimina "icons/"
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icon-512.png",  // ← Elimina "icons/"
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
