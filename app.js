@@ -82,17 +82,32 @@
                 ui.toggleAuthMode('login');
             },
             login: () => {
-                const email = document.getElementById('login-email').value;
-                const pass = document.getElementById('login-pass').value;
-                const user = state.db.users.find(u => u.email === email && u.pass === pass);
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
 
-                if (user) {
-                    state.currentUser = user;
-                    app.enterApp();
-                } else {
-                    alert('Credenciales incorrectas');
-                }
-            },
+    if (!email || !pass) {
+        alert('Complete los campos');
+        return;
+    }
+
+    // 🔒 Leer SIEMPRE directo desde localStorage
+    const raw = localStorage.getItem('pintorProDB');
+    const data = raw ? JSON.parse(raw) : {};
+    const users = data.users || [];
+
+    const user = users.find(u => u.email === email && u.pass === pass);
+
+    if (!user) {
+        alert('Credenciales incorrectas');
+        return;
+    }
+
+    // Sincronizar estado global
+    state.db = { ...state.db, ...data };
+    state.currentUser = user;
+
+    app.enterApp();
+},
             guestLogin: () => {
                 state.currentUser = { role: 'guest' };
                 app.enterApp();
