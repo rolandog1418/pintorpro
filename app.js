@@ -349,7 +349,7 @@
         return;
     }
 
-    hist.generatePDF(est);
+    hist.generateSinglePDF(est);
 },
                 generateSinglePDF: async (item) => {
     const { jsPDF } = window.jspdf;
