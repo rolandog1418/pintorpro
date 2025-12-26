@@ -450,10 +450,7 @@
                 doc.setFont("helvetica", "bold");
                 doc.text("TOTAL:", col2, yPos);
                 doc.text(`$${item.total.toLocaleString()}`, col3, yPos);
-
-                yPos += 20;
-
-                yPos += 10;
+                    yPos += 10;
 
 doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
@@ -468,6 +465,10 @@ doc.text(
 
 // Volver a negro por si se agrega algo más luego
 doc.setTextColor(0, 0, 0);
+
+                yPos += 20;
+
+                yPos += 10;
 
                 // --- BLOQUE DE AGRADECIMIENTO Y FIRMA ---
                 // Aquí es donde lo querías ubicar correctamente:
