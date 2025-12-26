@@ -396,7 +396,16 @@
     yPos += 10;
     doc.setFont("helvetica", "bold");
     doc.text(`TOTAL: $${item.total.toLocaleString()}`, 15, yPos);
-
+    doc.setFontSize(11);
+doc.setFont("helvetica", "italic");
+doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
+yPos += 7;
+doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
+yPos += 7;
+doc.text("Atentamente,", leftMargin, yPos);
+yPos += 7;
+doc.setFont("helvetica", "bold");
+doc.text(company.name, leftMargin, yPos);
     doc.save(`Presupuesto_${item.client}.pdf`);
 },
             handleTouchStart: (e, id) => {
