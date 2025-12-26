@@ -351,6 +351,54 @@
 
     hist.generatePDF(est);
 },
+                generateSinglePDF: async (item) => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const company = state.db.settings.company;
+    let yPos = 20;
+
+    // Logo
+    if (company.logo) {
+        try {
+            doc.addImage(company.logo, 'PNG', 15, yPos, 30, 30);
+        } catch (e) {}
+    }
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(company.name, 50, yPos + 10);
+
+    yPos += 40;
+
+    doc.setFontSize(14);
+    doc.text(`Presupuesto para: ${item.client}`, 15, yPos);
+    yPos += 10;
+
+    doc.setFontSize(10);
+    doc.text(`Fecha: ${item.date}`, 15, yPos);
+    yPos += 10;
+
+    const desc = item.baseCalc.isML
+        ? `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} ML)`
+        : `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} m²)`;
+
+    doc.text(desc, 15, yPos);
+    yPos += 10;
+
+    item.extras.forEach(extra => {
+        if (extra.desc) {
+            doc.text(`${extra.desc}: $${extra.price}`, 15, yPos);
+            yPos += 7;
+        }
+    });
+
+    yPos += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text(`TOTAL: $${item.total.toLocaleString()}`, 15, yPos);
+
+    doc.save(`Presupuesto_${item.client}.pdf`);
+},
             handleTouchStart: (e, id) => {
                 hist.timer = setTimeout(() => {
                     hist.toggleSelection(id);
