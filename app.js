@@ -453,6 +453,22 @@
 
                 yPos += 20;
 
+                yPos += 10;
+
+doc.setFontSize(9);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(120, 120, 120); // gris
+
+doc.text(
+    "Garantía: El trabajo realizado cuenta con una garantía de 6 meses, válida ante defectos de aplicación o materiales utilizados.",
+    leftMargin,
+    yPos,
+    { maxWidth: 180 }
+);
+
+// Volver a negro por si se agrega algo más luego
+doc.setTextColor(0, 0, 0);
+
                 // --- BLOQUE DE AGRADECIMIENTO Y FIRMA ---
                 // Aquí es donde lo querías ubicar correctamente:
                 doc.setFontSize(11);
