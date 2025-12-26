@@ -522,7 +522,116 @@
                 if(company.phone) {
                     doc.text(`Tel: ${company.phone}`, leftMargin + 35, yPos + 24);
                 }
-                
+                printSinglePDF: async (item) => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const company = state.db.settings.company;
+    const leftMargin = 15;
+    let yPos = 20;
+
+    // Logo
+    if (company.logo) {
+        try {
+            doc.addImage(company.logo, 'PNG', leftMargin, yPos, 30, 30);
+        } catch(e) {}
+    }
+
+    // Empresa
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(company.name, leftMargin + 35, yPos + 10);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    if (company.address) doc.text(company.address, leftMargin + 35, yPos + 17);
+    if (company.phone) doc.text(`Tel: ${company.phone}`, leftMargin + 35, yPos + 24);
+
+    yPos += 40;
+
+    doc.setDrawColor(200,200,200);
+    doc.line(leftMargin, yPos, 200, yPos);
+    yPos += 15;
+
+    // ====== PRESUPUESTO ÚNICO ======
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Presupuesto para: ${item.client}`, leftMargin, yPos);
+    yPos += 10;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Fecha: ${item.date}`, leftMargin, yPos);
+
+    if (item.address) {
+        yPos += 7;
+        doc.text(`Dirección: ${item.address}`, leftMargin, yPos);
+    }
+    if (item.phone) {
+        yPos += 7;
+        doc.text(`Teléfono: ${item.phone}`, leftMargin, yPos);
+    }
+
+    yPos += 15;
+
+    const col1 = leftMargin;
+    const col2 = 120;
+    const col3 = 160;
+
+    doc.setFillColor(240,240,240);
+    doc.rect(col1, yPos, 180 - col1, 8, 'F');
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Descripción", col1 + 2, yPos + 6);
+    doc.text("Precio", col2, yPos + 6);
+    doc.text("Total", col3, yPos + 6);
+
+    yPos += 10;
+
+    const desc = item.baseCalc.isML
+        ? `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} metros lineales)`
+        : `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} m²)`;
+
+    doc.setFont("helvetica", "normal");
+    doc.text(desc, col1 + 2, yPos);
+    doc.text(`$${state.db.settings.pricePerUnit.toLocaleString()}`, col2, yPos);
+    doc.text(`$${item.baseCalc.price.toLocaleString()}`, col3, yPos);
+
+    yPos += 8;
+
+    item.extras.forEach(extra => {
+        if (extra.desc.trim()) {
+            doc.text(extra.desc, col1 + 2, yPos);
+            doc.text(`$${extra.price.toLocaleString()}`, col3, yPos);
+            yPos += 6;
+        }
+    });
+
+    yPos += 10;
+
+    doc.setDrawColor(150,150,150);
+    doc.line(col3 - 40, yPos, col3 + 30, yPos);
+    yPos += 10;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("TOTAL:", col2, yPos);
+    doc.text(`$${item.total.toLocaleString()}`, col3, yPos);
+
+    yPos += 20;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "italic");
+    doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
+    yPos += 7;
+    doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
+    yPos += 7;
+    doc.text("Atentamente,", leftMargin, yPos);
+    yPos += 7;
+    doc.setFont("helvetica", "bold");
+    doc.text(company.name, leftMargin, yPos);
+
+    doc.save(`Presupuesto_${item.client}.pdf`);
+},
                 yPos += 40; // Espacio después del encabezado
                 
                 // Línea separadora
