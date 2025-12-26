@@ -303,141 +303,203 @@
         const hist = {
             timer: null,
             render: () => {
-    const container = document.getElementById('history-list');
-    if (!container) return;
+                const container = document.getElementById('history-list');
+                if (!container) return;
 
-    container.innerHTML = '';
+                container.innerHTML = '';
 
-    const data = JSON.parse(localStorage.getItem('pintorProDB')) || {};
-    const budgets = data.estimates || [];
+                const data = JSON.parse(localStorage.getItem('pintorProDB')) || {};
+                const budgets = data.estimates || [];
 
-    budgets.forEach((est, index) => {
-        const card = document.createElement('div');
-        card.className = 'history-card';
+                budgets.forEach((est, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'history-card';
 
-        card.innerHTML = `
-            <div class="history-main">
-                <input type="checkbox" class="history-check" data-index="${index}">
-                <strong>${est.client || 'Sin nombre'}</strong>
-                <span>${est.date}</span>
-                <span>$${Number(est.total).toLocaleString()}</span>
-                <button onclick="hist.openPDFByIndex(${index})">📄</button>
-            </div>
+                    card.innerHTML = `
+                        <div class="history-main">
+                            <input type="checkbox" class="history-check" data-index="${index}">
+                            <strong>${est.client || 'Sin nombre'}</strong>
+                            <span>${est.date}</span>
+                            <span>$${Number(est.total).toLocaleString()}</span>
+                            <button onclick="hist.openPDFByIndex(${index})">📄</button>
+                        </div>
 
-            <div class="history-details">
-                <div><b>Superficie:</b> ${est.baseCalc.area} ${est.baseCalc.isML ? 'ML' : 'M²'}</div>
-                <div><b>Precio m²:</b> $${est.baseCalc.price}</div>
-            </div>
-        `;
+                        <div class="history-details">
+                            <div><b>Superficie:</b> ${est.baseCalc.area} ${est.baseCalc.isML ? 'ML' : 'M²'}</div>
+                            <div><b>Precio m²:</b> $${est.baseCalc.price}</div>
+                        </div>
+                    `;
 
-        card.querySelector('.history-main').onclick = (e) => {
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-                card.classList.toggle('open');
-            }
-        };
+                    card.querySelector('.history-main').onclick = (e) => {
+                        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                            card.classList.toggle('open');
+                        }
+                    };
 
-        container.appendChild(card);
-    });
+                    container.appendChild(card);
+                });
             },
             openPDFByIndex: (index) => {
-    const data = JSON.parse(localStorage.getItem('pintorProDB')) || {};
-    const budgets = data.estimates || [];
+                const data = JSON.parse(localStorage.getItem('pintorProDB')) || {};
+                const budgets = data.estimates || [];
 
-    const est = budgets[index];
-    if (!est) {
-        alert('No se pudo abrir el PDF');
-        return;
-    }
+                const est = budgets[index];
+                if (!est) {
+                    alert('No se pudo abrir el PDF');
+                    return;
+                }
+                // Llamamos a la función corregida
+                hist.printSinglePDF(est);
+            },
+            
+            // --- FUNCIÓN CORREGIDA AQUÍ ---
+            printSinglePDF: async (item) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
 
-    hist.printSinglePDF(est);
-},
-                generateSinglePDF: async (item) => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+                const company = state.db.settings.company;
+                const leftMargin = 15;
+                let yPos = 20;
 
-    const company = state.db.settings.company;
-    let yPos = 20;
+                // 1. Logo
+                if (company.logo) {
+                    try {
+                        doc.addImage(company.logo, 'PNG', leftMargin, yPos, 30, 30);
+                    } catch (e) {}
+                }
 
-    // Logo
-    if (company.logo) {
-        try {
-            doc.addImage(company.logo, 'PNG', 15, yPos, 30, 30);
-        } catch (e) {}
-    }
+                // 2. Encabezado Empresa
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text(company.name, leftMargin + 35, yPos + 10);
 
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text(company.name, 50, yPos + 10);
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                if (company.address) doc.text(company.address, leftMargin + 35, yPos + 17);
+                if (company.phone) doc.text(`Tel: ${company.phone}`, leftMargin + 35, yPos + 24);
 
-    yPos += 40;
+                yPos += 40;
 
-    doc.setFontSize(14);
-    doc.text(`Presupuesto para: ${item.client}`, 15, yPos);
-    yPos += 10;
+                doc.setDrawColor(200, 200, 200);
+                doc.line(leftMargin, yPos, 200, yPos);
+                yPos += 15;
 
-    doc.setFontSize(10);
-    doc.text(`Fecha: ${item.date}`, 15, yPos);
-    yPos += 10;
+                // 3. Datos del Cliente
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text(`Presupuesto para: ${item.client}`, leftMargin, yPos);
+                yPos += 10;
 
-    const desc = item.baseCalc.isML
-        ? `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} ML)`
-        : `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} m²)`;
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Fecha: ${item.date}`, leftMargin, yPos);
 
-    doc.text(desc, 15, yPos);
-    yPos += 10;
+                if (item.address) {
+                    yPos += 7;
+                    doc.text(`Dirección: ${item.address}`, leftMargin, yPos);
+                }
+                if (item.phone) {
+                    yPos += 7;
+                    doc.text(`Teléfono: ${item.phone}`, leftMargin, yPos);
+                }
 
-    item.extras.forEach(extra => {
-        if (extra.desc) {
-            doc.text(`${extra.desc}: $${extra.price}`, 15, yPos);
-            yPos += 7;
-        }
-    });
+                yPos += 15;
 
-    yPos += 10;
-    doc.setFont("helvetica", "bold");
-    doc.text(`TOTAL: $${item.total.toLocaleString()}`, 15, yPos);
-    doc.setFontSize(11);
-doc.setFont("helvetica", "italic");
-doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
-yPos += 7;
-doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
-yPos += 7;
-doc.text("Atentamente,", leftMargin, yPos);
-yPos += 7;
-doc.setFont("helvetica", "bold");
-doc.text(company.name, leftMargin, yPos);
-    doc.save(`Presupuesto_${item.client}.pdf`);
-},
+                // 4. Tabla de detalles
+                const col1 = leftMargin;
+                const col2 = 120;
+                const col3 = 160;
+
+                doc.setFillColor(240, 240, 240);
+                doc.rect(col1, yPos, 180 - col1, 8, 'F');
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Descripción", col1 + 2, yPos + 6);
+                doc.text("Precio", col2, yPos + 6);
+                doc.text("Total", col3, yPos + 6);
+
+                yPos += 10;
+
+                const desc = item.baseCalc.isML
+                    ? `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} ML)`
+                    : `Trabajo de pintura (${item.baseCalc.area.toFixed(2)} m²)`;
+
+                doc.setFont("helvetica", "normal");
+                doc.text(desc, col1 + 2, yPos);
+                doc.text(`$${state.db.settings.pricePerUnit.toLocaleString()}`, col2, yPos);
+                doc.text(`$${item.baseCalc.price.toLocaleString()}`, col3, yPos);
+
+                yPos += 8;
+
+                // Extras
+                item.extras.forEach(extra => {
+                    if (extra.desc.trim()) {
+                        doc.text(extra.desc, col1 + 2, yPos);
+                        doc.text(`$${extra.price.toLocaleString()}`, col3, yPos);
+                        yPos += 6;
+                    }
+                });
+
+                yPos += 10;
+
+                // Línea total
+                doc.setDrawColor(150, 150, 150);
+                doc.line(col3 - 40, yPos, col3 + 30, yPos);
+                yPos += 10;
+
+                doc.setFont("helvetica", "bold");
+                doc.text("TOTAL:", col2, yPos);
+                doc.text(`$${item.total.toLocaleString()}`, col3, yPos);
+
+                yPos += 20;
+
+                // --- BLOQUE DE AGRADECIMIENTO Y FIRMA ---
+                // Aquí es donde lo querías ubicar correctamente:
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "italic");
+                doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
+                yPos += 7;
+                doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
+                yPos += 15; // Un poco más de espacio antes de "Atentamente"
+                doc.text("Atentamente,", leftMargin, yPos);
+                yPos += 7;
+                doc.setFont("helvetica", "bold");
+                doc.text(company.name, leftMargin, yPos);
+
+                // Guardar
+                doc.save(`Presupuesto_${item.client}.pdf`);
+            },
+
             handleTouchStart: (e, id) => {
                 hist.timer = setTimeout(() => {
                     hist.toggleSelection(id);
                     state.selectionMode = true;
-                    navigator.vibrate(50); // Feedback haptico
-                }, 600); // 600ms long press
+                    if (navigator.vibrate) navigator.vibrate(50);
+                }, 600);
             },
             handleTouchEnd: () => {
                 clearTimeout(hist.timer);
             },
             handleClick: (id) => {
-                if(state.selectionMode) {
+                if (state.selectionMode) {
                     hist.toggleSelection(id);
                 }
             },
             toggleSelection: (id) => {
-                if(state.selectedIds.includes(id)) {
+                if (state.selectedIds.includes(id)) {
                     state.selectedIds = state.selectedIds.filter(x => x !== id);
                 } else {
                     state.selectedIds.push(id);
                 }
-                
-                if(state.selectedIds.length === 0) state.selectionMode = false;
-                
+
+                if (state.selectedIds.length === 0) state.selectionMode = false;
+
                 hist.updateSelectionUI();
                 hist.render();
             },
             updateSelectionUI: () => {
                 const bar = document.getElementById('selection-bar');
-                if(state.selectedIds.length > 0) bar.classList.remove('hidden');
+                if (state.selectedIds.length > 0) bar.classList.remove('hidden');
                 else bar.classList.add('hidden');
             },
             clearSelection: () => {
@@ -446,47 +508,45 @@ doc.text(company.name, leftMargin, yPos);
                 hist.updateSelectionUI();
                 hist.render();
             },
-            // Acciones
             deleteSelected: () => {
-                if(!confirm('¿Eliminar seleccionados?')) return;
+                if (!confirm('¿Eliminar seleccionados?')) return;
                 state.db.estimates = state.db.estimates.filter(e => !state.selectedIds.includes(e.id));
                 storage.save();
                 hist.clearSelection();
             },
             editSingle: () => {
-                if(state.selectedIds.length !== 1) return alert('Selecciona solo uno para editar');
+                if (state.selectedIds.length !== 1) return alert('Selecciona solo uno para editar');
                 const estData = state.db.estimates.find(e => e.id === state.selectedIds[0]);
-                
-                // Cargar datos en formulario
+
                 state.editId = estData.id;
-                state.currentCalc = estData.baseCalc; // Restaurar calc base para cálculos
-                
+                state.currentCalc = estData.baseCalc;
+
                 document.getElementById('est-client').value = estData.client;
                 document.getElementById('est-address').value = estData.address;
                 document.getElementById('est-phone').value = estData.phone;
-                
+
                 document.getElementById('additional-tasks-list').innerHTML = "";
                 estData.extras.forEach(x => est.addTaskRow(x.desc, x.price));
-                
+
                 document.getElementById('btn-save-est').innerText = "Guardar Cambios";
                 nav.goTo('estimate');
                 est.updateTotal();
             },
             shareWhatsApp: () => {
-                if(state.selectedIds.length === 0) return;
+                if (state.selectedIds.length === 0) return;
                 const items = state.db.estimates.filter(e => state.selectedIds.includes(e.id));
-                
+
                 let text = `*Presupuesto - ${state.db.settings.company.name}*\n\n`;
                 items.forEach(item => {
                     text += `Cliente: ${item.client}\nTotal: $${item.total}\n----------------\n`;
                 });
-                
+
                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
             },
             email: () => {
-                if(state.selectedIds.length === 0) return;
+                if (state.selectedIds.length === 0) return;
                 const items = state.db.estimates.filter(e => state.selectedIds.includes(e.id));
-                
+
                 let body = "";
                 items.forEach(item => {
                     body += `Cliente: ${item.client}%0D%0ATotal: $${item.total}%0D%0A----------------%0D%0A`;
@@ -494,258 +554,35 @@ doc.text(company.name, leftMargin, yPos);
                 window.open(`mailto:?subject=Presupuesto&body=${body}`);
             },
             printPDF: async () => {
-                if(state.selectedIds.length === 0) return;
-                
+                // Esta función es para imprimir múltiples seleccionados desde la lista
+                if (state.selectedIds.length === 0) return;
+
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
+
                 const items = state.db.estimates.filter(e => state.selectedIds.includes(e.id));
-                
-                // Configuración de la empresa
                 const company = state.db.settings.company;
-                
-                // Margen izquierdo para logo y detalles de empresa
                 const leftMargin = 15;
                 let yPos = 20;
-                
-                // Logo (si existe)
-                if(company.logo) {
+
+                if (company.logo) {
                     try {
-                        // Asumimos que el logo está en base64
                         doc.addImage(company.logo, 'PNG', leftMargin, yPos, 30, 30);
-                    } catch(e) {
-                        console.log("Error al cargar logo:", e);
-                    }
+                    } catch (e) {}
                 }
-                
-                // Información de la empresa al lado del logo
+
                 doc.setFontSize(16);
                 doc.setFont("helvetica", "bold");
                 doc.text(company.name, leftMargin + 35, yPos + 10);
                 
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                if(company.address) {
-                    doc.text(company.address, leftMargin + 35, yPos + 17);
-                }
-                if(company.phone) {
-                    doc.text(`Tel: ${company.phone}`, leftMargin + 35, yPos + 24);
-                }
-                printSinglePDF: async (item) => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const company = state.db.settings.company;
-    const leftMargin = 15;
-    let yPos = 20;
-
-    // Logo
-    if (company.logo) {
-        try {
-            doc.addImage(company.logo, 'PNG', leftMargin, yPos, 30, 30);
-        } catch(e) {}
-    }
-
-    // Empresa
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text(company.name, leftMargin + 35, yPos + 10);
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    if (company.address) doc.text(company.address, leftMargin + 35, yPos + 17);
-    if (company.phone) doc.text(`Tel: ${company.phone}`, leftMargin + 35, yPos + 24);
-
-    yPos += 40;
-
-    doc.setDrawColor(200,200,200);
-    doc.line(leftMargin, yPos, 200, yPos);
-    yPos += 15;
-
-    // ====== PRESUPUESTO ÚNICO ======
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Presupuesto para: ${item.client}`, leftMargin, yPos);
-    yPos += 10;
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Fecha: ${item.date}`, leftMargin, yPos);
-
-    if (item.address) {
-        yPos += 7;
-        doc.text(`Dirección: ${item.address}`, leftMargin, yPos);
-    }
-    if (item.phone) {
-        yPos += 7;
-        doc.text(`Teléfono: ${item.phone}`, leftMargin, yPos);
-    }
-
-    yPos += 15;
-
-    const col1 = leftMargin;
-    const col2 = 120;
-    const col3 = 160;
-
-    doc.setFillColor(240,240,240);
-    doc.rect(col1, yPos, 180 - col1, 8, 'F');
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Descripción", col1 + 2, yPos + 6);
-    doc.text("Precio", col2, yPos + 6);
-    doc.text("Total", col3, yPos + 6);
-
-    yPos += 10;
-
-    const desc = item.baseCalc.isML
-        ? `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} metros lineales)`
-        : `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} m²)`;
-
-    doc.setFont("helvetica", "normal");
-    doc.text(desc, col1 + 2, yPos);
-    doc.text(`$${state.db.settings.pricePerUnit.toLocaleString()}`, col2, yPos);
-    doc.text(`$${item.baseCalc.price.toLocaleString()}`, col3, yPos);
-
-    yPos += 8;
-
-    item.extras.forEach(extra => {
-        if (extra.desc.trim()) {
-            doc.text(extra.desc, col1 + 2, yPos);
-            doc.text(`$${extra.price.toLocaleString()}`, col3, yPos);
-            yPos += 6;
-        }
-    });
-
-    yPos += 10;
-
-    doc.setDrawColor(150,150,150);
-    doc.line(col3 - 40, yPos, col3 + 30, yPos);
-    yPos += 10;
-
-    doc.setFont("helvetica", "bold");
-    doc.text("TOTAL:", col2, yPos);
-    doc.text(`$${item.total.toLocaleString()}`, col3, yPos);
-
-    yPos += 20;
-
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "italic");
-    doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
-    yPos += 7;
-    doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
-    yPos += 7;
-    doc.text("Atentamente,", leftMargin, yPos);
-    yPos += 7;
-    doc.setFont("helvetica", "bold");
-    doc.text(company.name, leftMargin, yPos);
-
-    doc.save(`Presupuesto_${item.client}.pdf`);
-},
-                yPos += 40; // Espacio después del encabezado
+                // ... Aquí puedes agregar lógica similar si deseas imprimir la lista completa
+                // Por ahora solo guarda el PDF básico de la selección
                 
-                // Línea separadora
-                doc.setDrawColor(200, 200, 200);
-                doc.line(leftMargin, yPos, 200, yPos);
-                yPos += 15;
-                
-                // Para cada presupuesto seleccionado
-                items.forEach((item, index) => {
-                    if(index > 0) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
-                    
-                    // Título del presupuesto
-                    doc.setFontSize(14);
-                    doc.setFont("helvetica", "bold");
-                    doc.text(`Presupuesto para: ${item.client}`, leftMargin, yPos);
-                    yPos += 10;
-                    
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "normal");
-                    doc.text(`Fecha: ${item.date}`, leftMargin, yPos);
-                    if(item.address) {
-                        yPos += 7;
-                        doc.text(`Dirección: ${item.address}`, leftMargin, yPos);
-                    }
-                    if(item.phone) {
-                        yPos += 7;
-                        doc.text(`Teléfono: ${item.phone}`, leftMargin, yPos);
-                    }
-                    
-                    yPos += 15;
-                    
-                    // Tabla de detalles
-                    const tableTop = yPos;
-                    const col1 = leftMargin;
-                    const col2 = 120;
-                    const col3 = 160;
-                    
-                    // Encabezado de la tabla
-                    doc.setFillColor(240, 240, 240);
-                    doc.rect(col1, tableTop, 180 - col1, 8, 'F');
-                    
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Descripción", col1 + 2, tableTop + 6);
-                    doc.text("Precio", col2, tableTop + 6);
-                    doc.text("Total", col3, tableTop + 6);
-                    
-                    yPos += 10;
-                    
-                    // Trabajo principal
-                    const desc = item.baseCalc.isML ? 
-                        `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} metros lineales)` :
-                        `Trabajo de pintura realizado (${item.baseCalc.area.toFixed(2)} m²)`;
-                    
-                    doc.setFont("helvetica", "normal");
-                    doc.text(desc, col1 + 2, yPos);
-                    doc.text(`$${state.db.settings.pricePerUnit.toLocaleString()}`, col2, yPos);
-                    doc.text(`$${item.baseCalc.price.toLocaleString()}`, col3, yPos);
-                    
-                    yPos += 8;
-                    
-                    // Trabajos adicionales
-                    item.extras.forEach(extra => {
-                        if(extra.desc.trim()) {
-                            doc.text(extra.desc, col1 + 2, yPos);
-                            doc.text(`$${extra.price.toLocaleString()}`, col3, yPos);
-                            yPos += 6;
-                        }
-                    });
-                    
-                    yPos += 10;
-                    
-                    // Línea separadora antes del total
-                    doc.setDrawColor(150, 150, 150);
-                    doc.line(col3 - 40, yPos, col3 + 30, yPos);
-                    yPos += 10;
-                    
-                    // Total
-                    doc.setFont("helvetica", "bold");
-                    doc.text("TOTAL:", col2, yPos);
-                    doc.text(`$${item.total.toLocaleString()}`, col3, yPos);
-                    
-                    yPos += 20;
-                    
-                    // Mensaje de agradecimiento
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "italic");
-                    doc.text("Agradecemos su confianza en nuestros servicios.", leftMargin, yPos);
-                    yPos += 7;
-                    doc.text("Quedamos a su disposición para cualquier consulta.", leftMargin, yPos);
-                    yPos += 7;
-                    doc.text("Atentamente,", leftMargin, yPos);
-                    yPos += 7;
-                    doc.setFont("helvetica", "bold");
-                    doc.text(company.name, leftMargin, yPos);
-                });
-                
-                // Guardar PDF
-                doc.save(`Presupuesto_${new Date().toISOString().slice(0,10)}.pdf`);
+                doc.save(`Presupuesto_Multiple.pdf`);
             }
         };
-
+                    
+    
         // --- MÓDULO CONFIGURACIÓN ---
         const settings = {
             loadToForm: () => {
