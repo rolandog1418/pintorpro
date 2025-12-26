@@ -321,7 +321,7 @@
                 <strong>${est.client || 'Sin nombre'}</strong>
                 <span>${est.date}</span>
                 <span>$${Number(est.total).toLocaleString()}</span>
-                <button onclick="hist.openPDFById('${est.id}')">📄</button>
+                <button onclick="hist.openPDFByIndex(${index})">📄</button>
             </div>
 
             <div class="history-details">
