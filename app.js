@@ -270,7 +270,7 @@ const est = {
         div.style.display = 'flex';
         div.style.gap = '5px';
         div.style.marginBottom = '5px';
-        
+
         div.innerHTML = `
             <input type="text" class="task-desc" placeholder="Descrip." value="${desc}" style="flex:2;">
             <input type="number" class="task-price" placeholder="$" value="${price}" oninput="est.updateTotal()" style="flex:1;">
@@ -278,58 +278,83 @@ const est = {
         `;
         container.appendChild(div);
     },
+
     updateTotal: () => {
-        const base = state.currentCalc.price; 
-        let extras = 0;
-        
-        document.querySelectorAll('.task-price').forEach(inp => {
-            extras += parseFloat(inp.value) || 0;
+        const base = state.currentCalc.price;
+        let extrasTotal = 0;
+
+        const extrasContainer = document.getElementById('est-extra-price');
+        extrasContainer.innerHTML = '';
+
+        const tasks = [];
+        document.querySelectorAll('.task-item').forEach(row => {
+            const desc = row.querySelector('.task-desc').value;
+            const price = parseFloat(row.querySelector('.task-price').value) || 0;
+
+            if (desc && price > 0) {
+                tasks.push({ desc, price });
+                extrasTotal += price;
+            }
         });
 
-        const total = base + extras;
+        // Mostrar Base
+        document.getElementById('est-base-price').innerText =
+            '$' + base.toLocaleString();
 
-        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
-        document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
-        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
-        
+        // Mostrar Adicionales SOLO si existen
+        if (tasks.length > 0) {
+            const title = document.createElement('div');
+            title.innerHTML = '<b>Adicionales:</b>';
+            extrasContainer.appendChild(title);
+
+            tasks.forEach(t => {
+                const line = document.createElement('div');
+                line.innerText = `${t.desc} ---- $${t.price.toLocaleString()}`;
+                extrasContainer.appendChild(line);
+            });
+        }
+
+        // Total general (SIN CAMBIOS)
+        const total = base + extrasTotal;
+        document.getElementById('est-total-final').innerText =
+            '$' + total.toLocaleString();
+
         return total;
     },
+
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
-        if(!client) return alert('El nombre es obligatorio');
+        if (!client) return alert('El nombre es obligatorio');
 
-        const total = est.updateTotal(); 
-        
-        // Recopilar items extras
+        const total = est.updateTotal();
+
         const extras = [];
         document.querySelectorAll('.task-item').forEach(row => {
             const desc = row.querySelector('.task-desc').value;
             const price = parseFloat(row.querySelector('.task-price').value) || 0;
-            if(desc || price > 0) {
-                extras.push({ desc, price });
-            }
+            if (desc && price > 0) extras.push({ desc, price });
         });
 
         const estimateData = {
             id: state.editId || Date.now(),
             date: new Date().toLocaleDateString(),
-            client: client,
+            client,
             address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
-            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)), // Copia profunda
-            extras: extras,
-            total: total
+            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)),
+            extras,
+            total
         };
 
         if (!state.db.estimates) state.db.estimates = [];
 
         if (state.editId) {
             const index = state.db.estimates.findIndex(e => e.id === state.editId);
-            if(index !== -1) state.db.estimates[index] = estimateData;
+            if (index !== -1) state.db.estimates[index] = estimateData;
         } else {
             state.db.estimates.unshift(estimateData);
         }
-        
+
         storage.save();
         nav.goTo('history');
     }
