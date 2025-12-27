@@ -340,6 +340,96 @@ const est = {
             date: new Date().toLocaleDateString(),
             client,
             address: document.getElementById('est-address').value,
+// --- MÓDULO PRESUPUESTO ---
+const est = {
+    addTaskRow: (desc = '', price = '') => {
+        const container = document.getElementById('additional-tasks-list');
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.style.display = 'flex';
+        div.style.gap = '5px';
+        div.style.marginBottom = '5px';
+
+        div.innerHTML = `
+            <input type="text" class="task-desc" placeholder="Descrip." value="${desc}" style="flex:2;">
+            <input type="number" class="task-price" placeholder="$" value="${price}"
+                   oninput="est.updateTotal()" style="flex:1;">
+            <button class="btn-icon btn-danger"
+                    style="padding: 5px 10px;"
+                    onclick="this.parentElement.remove(); est.updateTotal()">x</button>
+        `;
+        container.appendChild(div);
+    },
+
+    updateTotal: () => {
+        const base = state.currentCalc.price;
+        let extrasTotal = 0;
+
+        const extrasContainer = document.getElementById('est-extra-price');
+        extrasContainer.innerHTML = ''; // limpiar SIEMPRE
+
+        const tasks = [];
+
+        document.querySelectorAll('.task-item').forEach(row => {
+            const desc = row.querySelector('.task-desc').value.trim();
+            const price = parseFloat(row.querySelector('.task-price').value) || 0;
+
+            if (desc && price > 0) {
+                tasks.push({ desc, price });
+                extrasTotal += price;
+            }
+        });
+
+        // Base
+        document.getElementById('est-base-price').innerText =
+            '$' + base.toLocaleString();
+
+        // Adicionales (solo si existen)
+        if (tasks.length > 0) {
+            const title = document.createElement('div');
+            title.innerHTML = '<b>Adicionales:</b>';
+            title.style.marginTop = '5px';
+            extrasContainer.appendChild(title);
+
+            tasks.forEach(t => {
+                const line = document.createElement('div');
+                line.style.display = 'flex';
+                line.style.justifyContent = 'space-between';
+
+                line.innerHTML = `
+                    <span>${t.desc}</span>
+                    <span>$${t.price.toLocaleString()}</span>
+                `;
+                extrasContainer.appendChild(line);
+            });
+        }
+
+        // Total general (SIN CAMBIOS)
+        const total = base + extrasTotal;
+        document.getElementById('est-total-final').innerText =
+            '$' + total.toLocaleString();
+
+        return total;
+    },
+
+    saveEstimate: () => {
+        const client = document.getElementById('est-client').value;
+        if (!client) return alert('El nombre es obligatorio');
+
+        const total = est.updateTotal();
+
+        const extras = [];
+        document.querySelectorAll('.task-item').forEach(row => {
+            const desc = row.querySelector('.task-desc').value.trim();
+            const price = parseFloat(row.querySelector('.task-price').value) || 0;
+            if (desc && price > 0) extras.push({ desc, price });
+        });
+
+        const estimateData = {
+            id: state.editId || Date.now(),
+            date: new Date().toLocaleDateString(),
+            client,
+            address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
             baseCalc: JSON.parse(JSON.stringify(state.currentCalc)),
             extras,
@@ -359,7 +449,6 @@ const est = {
         nav.goTo('history');
     }
 };
-
 // --- MÓDULO HISTORIAL ---
 const hist = {
     selectedIndexes: [],
