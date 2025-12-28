@@ -766,6 +766,9 @@ const ui = {
 };
 
 // --- INICIALIZACIÓN ---
-window.onload = function() {
+// --- INICIALIZACIÓN ---
+// Usamos DOMContentLoaded para que la app inicie INSTANTÁNEAMENTE
+// sin esperar a que carguen las librerías externas o imágenes pesadas.
+document.addEventListener('DOMContentLoaded', function() {
     app.init();
-};
+});
