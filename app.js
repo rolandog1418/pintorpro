@@ -264,6 +264,7 @@ const calc = {
 // --- MÓDULO PRESUPUESTO ---
 
         // --- MÓDULO PRESUPUESTO ---
+// --- MÓDULO PRESUPUESTO ---
 const est = {
     addTaskRow: (desc = '', price = '') => {
         const container = document.getElementById('additional-tasks-list');
@@ -275,18 +276,16 @@ const est = {
 
         div.innerHTML = `
             <input type="text" class="task-desc" placeholder="Descrip." value="${desc}" style="flex:2;">
-            <input type="number" class="task-price" placeholder="$" value="${price}"
-                   oninput="est.updateTotal()" style="flex:1;">
-            <button class="btn-icon btn-danger"
-                    style="padding: 5px 10px;"
-                    onclick="this.parentElement.remove(); est.updateTotal()">x</button>
+            <input type="number" class="task-price" placeholder="$" value="${price}" oninput="est.updateTotal()" style="flex:1;">
+            <button class="btn-icon btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove(); est.updateTotal()">x</button>
         `;
         container.appendChild(div);
     },
-updateTotal: () => {
+
+    updateTotal: () => {
         const base = state.currentCalc.price; 
         let extras = 0;
-        
+
         document.querySelectorAll('.task-price').forEach(inp => {
             extras += parseFloat(inp.value) || 0;
         });
@@ -296,32 +295,34 @@ updateTotal: () => {
         document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
         document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
         document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
-        
+
         return total;
     },
-    
+
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
         if (!client) return alert('El nombre es obligatorio');
 
-        const total = est.updateTotal();
+        const total = est.updateTotal(); 
 
         const extras = [];
         document.querySelectorAll('.task-item').forEach(row => {
-            const desc = row.querySelector('.task-desc').value.trim();
+            const desc = row.querySelector('.task-desc').value;
             const price = parseFloat(row.querySelector('.task-price').value) || 0;
-            if (desc && price > 0) extras.push({ desc, price });
+            if (desc || price > 0) {
+                extras.push({ desc, price });
+            }
         });
 
         const estimateData = {
             id: state.editId || Date.now(),
             date: new Date().toLocaleDateString(),
-            client,
+            client: client,
             address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
             baseCalc: JSON.parse(JSON.stringify(state.currentCalc)),
-            extras,
-            total
+            extras: extras,
+            total: total
         };
 
         if (!state.db.estimates) state.db.estimates = [];
@@ -337,7 +338,6 @@ updateTotal: () => {
         nav.goTo('history');
     }
 };
-
 // --- MÓDULO HISTORIAL ---
 const hist = {
     selectedIndexes: [],
