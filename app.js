@@ -279,21 +279,29 @@ const est = {
         container.appendChild(div);
     },
     updateTotal: () => {
-        const base = state.currentCalc.price; 
-        let extras = 0;
-        
-        document.querySelectorAll('.task-price').forEach(inp => {
-            extras += parseFloat(inp.value) || 0;
-        });
+    const base = state.currentCalc.price; 
+    let extras = 0;
+    
+    document.querySelectorAll('.task-price').forEach(inp => {
+        extras += parseFloat(inp.value) || 0;
+    });
 
-        const total = base + extras;
+    const total = base + extras;
 
-        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+    document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+    document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+
+    // 👇 Mostrar u ocultar "Adicionales"
+    const extraRow = document.getElementById('row-adicionales');
+    if (extras > 0) {
+        extraRow.style.display = 'flex';
         document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
-        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
-        
-        return total;
-    },
+    } else {
+        extraRow.style.display = 'none';
+    }
+
+    return total;
+    }
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
         if(!client) return alert('El nombre es obligatorio');
