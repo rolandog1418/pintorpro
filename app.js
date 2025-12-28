@@ -262,6 +262,8 @@ const calc = {
 };
 
 // --- MÓDULO PRESUPUESTO ---
+
+        // --- MÓDULO PRESUPUESTO ---
 const est = {
     addTaskRow: (desc = '', price = '') => {
         const container = document.getElementById('additional-tasks-list');
@@ -270,66 +272,102 @@ const est = {
         div.style.display = 'flex';
         div.style.gap = '5px';
         div.style.marginBottom = '5px';
-        
+
         div.innerHTML = `
             <input type="text" class="task-desc" placeholder="Descrip." value="${desc}" style="flex:2;">
-            <input type="number" class="task-price" placeholder="$" value="${price}" oninput="est.updateTotal()" style="flex:1;">
-            <button class="btn-icon btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove(); est.updateTotal()">x</button>
+            <input type="number" class="task-price" placeholder="$" value="${price}"
+                   oninput="est.updateTotal()" style="flex:1;">
+            <button class="btn-icon btn-danger"
+                    style="padding: 5px 10px;"
+                    onclick="this.parentElement.remove(); est.updateTotal()">x</button>
         `;
         container.appendChild(div);
     },
+
     updateTotal: () => {
-        const base = state.currentCalc.price; 
-        let extras = 0;
-        
-        document.querySelectorAll('.task-price').forEach(inp => {
-            extras += parseFloat(inp.value) || 0;
+        const base = state.currentCalc.price;
+        let extrasTotal = 0;
+
+        const extrasContainer = document.getElementById('est-extra-price');
+        extrasContainer.innerHTML = ''; // limpiar SIEMPRE
+
+        const tasks = [];
+
+        document.querySelectorAll('.task-item').forEach(row => {
+            const desc = row.querySelector('.task-desc').value.trim();
+            const price = parseFloat(row.querySelector('.task-price').value) || 0;
+
+            if (desc && price > 0) {
+                tasks.push({ desc, price });
+                extrasTotal += price;
+            }
         });
 
-        const total = base + extras;
+        // Base
+        document.getElementById('est-base-price').innerText =
+            '$' + base.toLocaleString();
 
-        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
-        document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
-        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
-        
+        // Adicionales (solo si existen)
+        if (tasks.length > 0) {
+            const title = document.createElement('div');
+            title.innerHTML = '<b>Adicionales:</b>';
+            title.style.marginTop = '5px';
+            extrasContainer.appendChild(title);
+
+            tasks.forEach(t => {
+                const line = document.createElement('div');
+                line.style.display = 'flex';
+                line.style.justifyContent = 'space-between';
+
+                line.innerHTML = `
+                    <span>${t.desc}</span>
+                    <span>$${t.price.toLocaleString()}</span>
+                `;
+                extrasContainer.appendChild(line);
+            });
+        }
+
+        // Total general (SIN CAMBIOS)
+        const total = base + extrasTotal;
+        document.getElementById('est-total-final').innerText =
+            '$' + total.toLocaleString();
+
         return total;
     },
+
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
-        if(!client) return alert('El nombre es obligatorio');
+        if (!client) return alert('El nombre es obligatorio');
 
-        const total = est.updateTotal(); 
-        
-        // Recopilar items extras
+        const total = est.updateTotal();
+
         const extras = [];
         document.querySelectorAll('.task-item').forEach(row => {
-            const desc = row.querySelector('.task-desc').value;
+            const desc = row.querySelector('.task-desc').value.trim();
             const price = parseFloat(row.querySelector('.task-price').value) || 0;
-            if(desc || price > 0) {
-                extras.push({ desc, price });
-            }
+            if (desc && price > 0) extras.push({ desc, price });
         });
 
         const estimateData = {
             id: state.editId || Date.now(),
             date: new Date().toLocaleDateString(),
-            client: client,
+            client,
             address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
-            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)), // Copia profunda
-            extras: extras,
-            total: total
+            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)),
+            extras,
+            total
         };
 
         if (!state.db.estimates) state.db.estimates = [];
 
         if (state.editId) {
             const index = state.db.estimates.findIndex(e => e.id === state.editId);
-            if(index !== -1) state.db.estimates[index] = estimateData;
+            if (index !== -1) state.db.estimates[index] = estimateData;
         } else {
             state.db.estimates.unshift(estimateData);
         }
-        
+
         storage.save();
         nav.goTo('history');
     }
