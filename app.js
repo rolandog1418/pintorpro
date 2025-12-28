@@ -279,6 +279,7 @@ const est = {
         container.appendChild(div);
     },
     updateTotal: () => {
+    updateTotal: () => {
     const base = state.currentCalc.price; 
     let extras = 0;
     
