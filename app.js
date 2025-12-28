@@ -557,4 +557,177 @@ const hist = {
         hist.selectedIndexes = [];
         document.querySelectorAll('.history-check').forEach(ch => ch.checked = false);
         hist.updateActionBar();
-  
+   },
+
+    updateActionBar: () => {
+        let bar = document.getElementById('history-actions');
+        if (bar) {
+            bar.style.display = hist.selectedIndexes.length > 0 ? 'flex' : 'none';
+        }
+    }
+};
+
+// --- MÓDULO CONFIGURACIÓN ---
+const settings = {
+    loadToForm: () => {
+        const s = state.db.settings;
+        document.getElementById('set-company').value = s.company.name || '';
+        document.getElementById('set-email').value = s.company.email || '';
+        document.getElementById('set-address').value = s.company.address || '';
+        document.getElementById('set-phone').value = s.company.phone || '';
+        
+        // Colores
+        document.getElementById('set-bg-color').value = s.theme.bgColor || '#f0f8ff';
+        document.getElementById('set-color-accent').value = s.theme.accent || '#4fc3f7';
+        document.getElementById('set-secondary-color').value = s.theme.secondary || '#0288d1';
+        
+        document.getElementById('font-size-display').innerText = (s.theme.fontSize || 16) + 'px';
+        document.getElementById('set-darkmode').checked = s.theme.darkMode;
+        
+        document.getElementById('set-price').value = s.pricePerUnit;
+        document.getElementById('set-coverage').value = s.coverage;
+    },
+    
+    saveAll: () => {
+        const s = state.db.settings;
+        s.company.name = document.getElementById('set-company').value;
+        s.company.address = document.getElementById('set-address').value;
+        s.company.phone = document.getElementById('set-phone').value;
+        
+        // Guardar colores
+        s.theme.bgColor = document.getElementById('set-bg-color').value;
+        s.theme.accent = document.getElementById('set-color-accent').value;
+        s.theme.secondary = document.getElementById('set-secondary-color').value;
+        
+        s.theme.darkMode = document.getElementById('set-darkmode').checked;
+        s.theme.fontSize = parseInt(document.getElementById('font-size-display').innerText);
+        
+        // Password
+        const newPass = document.getElementById('set-password').value;
+        if(newPass && state.currentUser && state.currentUser.role === 'admin') {
+            state.currentUser.pass = newPass;
+            const idx = state.db.users.findIndex(u => u.email === state.currentUser.email);
+            if(idx !== -1) state.db.users[idx].pass = newPass;
+            alert('Contraseña actualizada');
+            document.getElementById('set-password').value = '';
+        }
+
+        s.pricePerUnit = parseFloat(document.getElementById('set-price').value) || s.pricePerUnit;
+        s.coverage = parseFloat(document.getElementById('set-coverage').value) || s.coverage;
+
+        storage.save();
+        settings.applyTheme();
+        alert('Configuración Guardada');
+        nav.goTo('dashboard');
+    },
+    
+    handleLogoUpload: (input) => {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Comprimir o limitar tamaño sería ideal, pero guardamos directo
+                state.db.settings.company.logo = e.target.result; 
+                document.getElementById('header-logo').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    },
+    
+    adjustFont: (delta) => {
+        let current = state.db.settings.theme.fontSize || 16;
+        let newSize = current + delta;
+        if(newSize < 12) newSize = 12;
+        if(newSize > 24) newSize = 24;
+        
+        state.db.settings.theme.fontSize = newSize;
+        document.getElementById('font-size-display').innerText = newSize + 'px';
+        document.documentElement.style.setProperty('--base-font-size', newSize + 'px');
+    },
+    
+    toggleDarkMode: () => {
+        // Previsualización inmediata
+        const isDark = document.getElementById('set-darkmode').checked;
+        if(isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    },
+    
+    updatePreview: () => {
+        const bgColor = document.getElementById('set-bg-color').value;
+        const pastelColor = settings.hexToPastel(bgColor);
+        document.documentElement.style.setProperty('--primary-bg', pastelColor);
+
+        const accentColor = document.getElementById('set-color-accent').value;
+        document.documentElement.style.setProperty('--accent-color', accentColor);
+
+        const secondaryColor = document.getElementById('set-secondary-color').value;
+        document.documentElement.style.setProperty('--secondary-accent', secondaryColor);
+        document.documentElement.style.setProperty('--border-color', settings.lightenColor(secondaryColor, 40));
+    },
+    
+    hexToPastel: (hex) => {
+        if(!hex || hex.length < 7) return hex;
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+
+        // Mezclar con blanco para hacer pastel
+        r = Math.min(255, Math.floor(r + (255 - r) * 0.7));
+        g = Math.min(255, Math.floor(g + (255 - g) * 0.7));
+        b = Math.min(255, Math.floor(b + (255 - b) * 0.7));
+
+        return `rgb(${r}, ${g}, ${b})`;
+    },
+    
+    lightenColor: (hex, percent) => {
+        if(!hex || hex.length < 7) return hex;
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+
+        r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
+        g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
+        b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+
+        return `rgb(${r}, ${g}, ${b})`;
+    },
+    
+    applyTheme: () => {
+        const s = state.db.settings.theme;
+        
+        const pastelBg = settings.hexToPastel(s.bgColor || '#f0f8ff');
+        document.documentElement.style.setProperty('--primary-bg', pastelBg);
+        
+        document.documentElement.style.setProperty('--accent-color', s.accent);
+        document.documentElement.style.setProperty('--secondary-accent', s.secondary);
+        document.documentElement.style.setProperty('--base-font-size', (s.fontSize || 16) + 'px');
+        
+        const lightBorder = settings.lightenColor(s.secondary, 40);
+        document.documentElement.style.setProperty('--border-color', lightBorder);
+        
+        if(s.darkMode) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+        
+        document.getElementById('header-company-name').innerText = state.db.settings.company.name || 'Mi Empresa';
+        if(state.db.settings.company.logo) {
+            document.getElementById('header-logo').src = state.db.settings.company.logo;
+        }
+    }
+};
+
+// --- UI HELPERS ---
+const ui = {
+    toggleAuthMode: (mode) => {
+        if(mode === 'register') {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        } else {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+    }
+};
+
+// --- INICIALIZACIÓN ---
+window.onload = function() {
+    app.init();
+};
