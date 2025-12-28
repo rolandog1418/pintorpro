@@ -1,34 +1,45 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- ==================== META INFORMACIÓN ==================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>PintorPro - Calculadora y Presupuestos</title>
-        <!-- PWA -->
+    
+    <!-- ==================== CONFIGURACIÓN PWA ==================== -->
+    <!-- Manifest para Progressive Web App -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4fc3f7">
     
-    <!-- Estilos -->
+    <!-- ==================== HOJAS DE ESTILO ==================== -->
+    <!-- Estilos principales de la aplicación -->
     <link rel="stylesheet" href="style.css">
     
-        <!-- Icons -->
+    <!-- ==================== ICONOS ==================== -->
     <link rel="icon" type="image/png" href="icon-192.png">
 
-    <!-- Librerías externas -->
+    <!-- ==================== LIBRERÍAS EXTERNAS ==================== -->
+    <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF para generar PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas para capturar elementos HTML como imágenes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-
 </head>
-<body>
 
+<body>
+    <!-- =========================================================== -->
+    <!-- ==================== SECCIONES DE VISTAS ==================== -->
+    <!-- =========================================================== -->
+
+    <!-- ==================== VISTA: AUTENTICACIÓN ==================== -->
     <div id="view-auth" class="view-section container">
         <div class="auth-card">
             <h1 style="color: var(--secondary-accent); margin-bottom: 10px;">PintorPro</h1>
             <p>Calculadora y Presupuestos</p>
             <br>
+            
+            <!-- Formulario de Inicio de Sesión -->
             <div id="login-form">
                 <input type="email" id="login-email" placeholder="Correo electrónico">
                 <input type="password" id="login-pass" placeholder="Contraseña">
@@ -36,6 +47,7 @@
                 <p style="margin-top:10px; font-size:0.8rem; text-decoration: underline;" onclick="app.forgotPassword()">Olvidé mi contraseña</p>
             </div>
 
+            <!-- Formulario de Registro (oculto por defecto) -->
             <div id="register-form" class="hidden">
                 <h3>Registro de Administrador</h3>
                 <input type="email" id="reg-email" placeholder="Correo electrónico">
@@ -44,14 +56,18 @@
                 <button class="btn btn-secondary" style="margin-top:10px" onclick="ui.toggleAuthMode('login')">Volver</button>
             </div>
 
+            <!-- Opciones de autenticación -->
             <div class="auth-options">
                 <button class="btn btn-secondary" onclick="app.guestLogin()">Entrar como Invitado</button>
                 <button class="btn btn-secondary" id="btn-show-register" onclick="ui.toggleAuthMode('register')">Soy Nuevo</button>
             </div>
         </div>
     </div>
+    <!-- ==================== FIN VISTA AUTENTICACIÓN ==================== -->
 
+    <!-- ==================== VISTA: PANEL PRINCIPAL ==================== -->
     <div id="view-dashboard" class="view-section container hidden">
+        <!-- Barra superior con logo y configuración -->
         <div class="header-bar">
             <div class="brand">
                 <img id="header-logo" src="https://via.placeholder.com/40" alt="Logo">
@@ -60,7 +76,9 @@
             <button class="btn-icon" id="btn-settings-nav" onclick="nav.goTo('settings')"><i class="fas fa-cog"></i></button>
         </div>
 
+        <!-- Controles de la calculadora -->
         <div class="calc-controls">
+            <!-- Selector de modo de medida (M² o ML) -->
             <div class="toggle-row">
                 <span>Modo de Medida:</span>
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -72,6 +90,7 @@
                 </div>
             </div>
 
+            <!-- Inputs para modo M² (Alto x Ancho) -->
             <div id="inputs-m2">
                 <label>Alto (m)</label>
                 <input type="number" id="inp-height" inputmode="decimal" placeholder="0.00" oninput="calc.calculate()">
@@ -79,11 +98,13 @@
                 <input type="number" id="inp-width-m2" inputmode="decimal" placeholder="0.00" oninput="calc.calculate()">
             </div>
 
+            <!-- Inputs para modo ML (Metros Lineales) -->
             <div id="inputs-ml" class="hidden">
                 <label>Metros Lineales</label>
                 <input type="number" id="inp-width-ml" inputmode="decimal" placeholder="0.00" oninput="calc.calculate()">
             </div>
 
+            <!-- Control de descuento -->
             <div class="toggle-row" style="margin-top:15px;">
                 <span>Aplicar Descuento</span>
                 <label class="switch">
@@ -92,11 +113,13 @@
                 </label>
             </div>
             
+            <!-- Control deslizante para porcentaje de descuento -->
             <div id="discount-control" class="hidden">
                 <label>Porcentaje: <span id="lbl-discount-val">5</span>%</label>
                 <input type="range" id="rng-discount" min="5" max="50" step="5" value="5" oninput="document.getElementById('lbl-discount-val').innerText=this.value; calc.calculate()">
             </div>
 
+            <!-- Resultados del cálculo -->
             <div class="result-box">
                 <div class="result-row">
                     <span>Superficie:</span>
@@ -111,27 +134,34 @@
                 </div>
             </div>
             
+            <!-- Botón para generar presupuesto -->
             <br>
             <button class="btn btn-primary" onclick="calc.generateEstimate()">
                 <i class="fas fa-file-invoice-dollar"></i> Generar Presupuesto
             </button>
         </div>
-        <br><br><br> </div>
+        <br><br><br>
+    </div>
+    <!-- ==================== FIN PANEL PRINCIPAL ==================== -->
 
+    <!-- ==================== VISTA: FORMULARIO DE PRESUPUESTO ==================== -->
     <div id="view-estimate-form" class="view-section container hidden">
         <h3><i class="fas fa-edit"></i> Detalles del Trabajo</h3>
         <br>
+        
+        <!-- Datos básicos del cliente/trabajo -->
         <input type="text" id="est-client" placeholder="Nombre del Cliente / Trabajo (Obligatorio)">
         <input type="text" id="est-address" placeholder="Dirección (Opcional)">
         <input type="tel" id="est-phone" placeholder="Teléfono (Opcional)">
 
+        <!-- Sección de tareas adicionales -->
         <h4 style="margin: 15px 0;">Tareas Adicionales</h4>
-        <div id="additional-tasks-list">
-            </div>
+        <div id="additional-tasks-list"></div>
         <button class="btn btn-secondary btn-icon" onclick="est.addTaskRow()" style="margin: 10px auto;">
             <i class="fas fa-plus"></i> Agregar Tarea
         </button>
 
+        <!-- Resumen de precios -->
         <div class="result-box" style="margin-top: 20px;">
              <div class="result-row">
                 <span>Base Calculada:</span>
@@ -148,32 +178,40 @@
             </div>
         </div>
 
+        <!-- Botones de acción del formulario -->
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn btn-danger" onclick="nav.goTo('dashboard')">Cancelar</button>
             <button class="btn btn-primary" id="btn-save-est" onclick="est.saveEstimate()">Guardar</button>
         </div>
     </div>
+    <!-- ==================== FIN FORMULARIO PRESUPUESTO ==================== -->
 
+    <!-- ==================== VISTA: HISTORIAL ==================== -->
     <div id="view-history" class="view-section container hidden">
         <h3>Historial de Trabajos</h3>
 
-<div id="history-list" class="history-list"></div>
+        <!-- Lista de presupuestos guardados -->
+        <div id="history-list" class="history-list"></div>
 
-<div class="history-actions hidden" id="history-actions">
-    <label>
-        <input type="checkbox" id="select-all-history">
-        Seleccionar todos
-    </label>
-    <button onclick="app.deleteSelectedBudgets()">Eliminar seleccionados</button>
-</div>
+        <!-- Acciones para selección múltiple -->
+        <div class="history-actions hidden" id="history-actions">
+            <label>
+                <input type="checkbox" id="select-all-history">
+                Seleccionar todos
+            </label>
+            <button onclick="app.deleteSelectedBudgets()">Eliminar seleccionados</button>
+        </div>
 
-<br><br><br>
+        <br><br><br>
     </div>
+    <!-- ==================== FIN VISTA HISTORIAL ==================== -->
 
+    <!-- ==================== VISTA: CONFIGURACIÓN ==================== -->
     <div id="view-settings" class="view-section container hidden">
         <h2>Configuración</h2>
         <br>
         
+        <!-- Grupo: Información de la cuenta -->
         <div class="settings-group">
             <h3>Mi Cuenta</h3>
             <label>Logo (URL o Base64 - Simulado)</label>
@@ -190,6 +228,7 @@
             <input type="password" id="set-password">
         </div>
 
+        <!-- Grupo: Personalización de la interfaz -->
         <div class="settings-group">
             <h3>Mi Espacio</h3>
             
@@ -205,12 +244,15 @@
             <label>Color Secundario (Bordes, Textos)</label>
             <input type="color" id="set-secondary-color" value="#0288d1" onchange="settings.updatePreview()">
             
+            <!-- Control de tamaño de fuente -->
             <label>Tamaño Fuente</label>
             <div style="display:flex; gap:10px; align-items:center;">
                 <button class="btn btn-secondary btn-icon" onclick="settings.adjustFont(-1)">-</button>
                 <span id="font-size-display">16px</span>
                 <button class="btn btn-secondary btn-icon" onclick="settings.adjustFont(1)">+</button>
             </div>
+            
+            <!-- Toggle para modo oscuro -->
             <div class="toggle-row" style="margin-top:15px;">
                 <span>Modo Oscuro</span>
                 <label class="switch">
@@ -220,6 +262,7 @@
             </div>
         </div>
 
+        <!-- Grupo: Parámetros de cálculo -->
         <div class="settings-group">
             <h3>Datos de Cálculo</h3>
             <label>Precio por M² / ML ($)</label>
@@ -228,11 +271,14 @@
             <input type="number" id="set-coverage" inputmode="decimal">
         </div>
 
+        <!-- Botones de acción de configuración -->
         <button class="btn btn-primary" onclick="settings.saveAll()">Guardar Cambios</button>
         <button class="btn btn-danger" style="margin-top:15px;" onclick="app.logout()">Cerrar Sesión</button>
         <br><br><br>
     </div>
+    <!-- ==================== FIN VISTA CONFIGURACIÓN ==================== -->
 
+    <!-- ==================== BARRA DE NAVEGACIÓN INFERIOR ==================== -->
     <div id="bottom-nav" class="bottom-nav hidden">
         <div class="nav-item active" onclick="nav.goTo('dashboard')" id="nav-dash">
             <i class="fas fa-calculator"></i> Calc
@@ -241,20 +287,21 @@
             <i class="fas fa-history"></i> Historial
         </div>
     </div>
+    <!-- ==================== FIN BARRA NAVEGACIÓN ==================== -->
 
-    <div id="printable-area">
-        </div>
+    <!-- ==================== ÁREA PARA IMPRESIÓN (OCULTA) ==================== -->
+    <div id="printable-area"></div>
+    <!-- ==================== FIN ÁREA IMPRESIÓN ==================== -->
 
-                
-                
-        <!-- App JS -->
+    <!-- ==================== SCRIPTS DE LA APLICACIÓN ==================== -->
+    <!-- Archivo principal de JavaScript -->
     <script src="app.js"></script>
 
-    <!-- Registro Service Worker -->
+    <!-- Registro del Service Worker para PWA -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js');
         }
     </script>
 </body>
-</html>
+            </html>
