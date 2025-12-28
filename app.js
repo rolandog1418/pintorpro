@@ -285,55 +285,42 @@ const est = {
     },
 
     updateTotal: () => {
-        const base = state.currentCalc.price;
-        let extrasTotal = 0;
+    const base = state.currentCalc.price; 
+    let extras = 0;
 
-        const extrasContainer = document.getElementById('est-extra-price');
-        extrasContainer.innerHTML = ''; // limpiar SIEMPRE
+    const extrasRow = document.getElementById('est-extras-row');
+    const extrasDetail = document.getElementById('est-extras-detail');
 
-        const tasks = [];
+    extrasDetail.innerHTML = '';
 
-        document.querySelectorAll('.task-item').forEach(row => {
-            const desc = row.querySelector('.task-desc').value.trim();
-            const price = parseFloat(row.querySelector('.task-price').value) || 0;
+    const taskRows = document.querySelectorAll('.task-item');
+    const hasExtras = taskRows.length > 0;
 
-            if (desc && price > 0) {
-                tasks.push({ desc, price });
-                extrasTotal += price;
-            }
-        });
+    taskRows.forEach(row => {
+        const desc = row.querySelector('.task-desc').value.trim();
+        const price = parseFloat(row.querySelector('.task-price').value) || 0;
 
-        // Base
-        document.getElementById('est-base-price').innerText =
-            '$' + base.toLocaleString();
+        extras += price;
 
-        // Adicionales (solo si existen)
-        if (tasks.length > 0) {
-            const title = document.createElement('div');
-            title.innerHTML = '<b>Adicionales:</b>';
-            title.style.marginTop = '5px';
-            extrasContainer.appendChild(title);
-
-            tasks.forEach(t => {
-                const line = document.createElement('div');
-                line.style.display = 'flex';
-                line.style.justifyContent = 'space-between';
-
-                line.innerHTML = `
-                    <span>${t.desc}</span>
-                    <span>$${t.price.toLocaleString()}</span>
-                `;
-                extrasContainer.appendChild(line);
-            });
+        if (desc || price > 0) {
+            const line = document.createElement('div');
+            line.textContent = `${desc || 'Tarea'} ----- $${price.toLocaleString()}`;
+            extrasDetail.appendChild(line);
         }
+    });
 
-        // Total general (SIN CAMBIOS)
-        const total = base + extrasTotal;
-        document.getElementById('est-total-final').innerText =
-            '$' + total.toLocaleString();
+    // Renderizado condicional
+    extrasRow.style.display = hasExtras ? 'flex' : 'none';
+    extrasDetail.style.display = hasExtras ? 'block' : 'none';
 
-        return total;
-    },
+    const total = base + extras;
+
+    document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+    document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
+    document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+
+    return total;
+},
 
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
