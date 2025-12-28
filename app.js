@@ -67,6 +67,82 @@ const storage = {
 
 // --- MÓDULO PRINCIPAL (AUTH & APP) ---
 
+const app = {
+    init: () => {
+        storage.load();
+        
+        // Verificar usuarios existentes
+        const adminExists = state.db.users && state.db.users.length > 0;
+        
+        if (!adminExists) {
+            ui.toggleAuthMode('register');
+            const btnGuest = document.getElementById('btn-show-register');
+            if(btnGuest) btnGuest.style.display = 'none';
+        } else {
+            ui.toggleAuthMode('login');
+            const btnGuest = document.getElementById('btn-show-register');
+            if(btnGuest) btnGuest.style.display = 'none';
+        }
+    },
+
+    login: () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+
+        // Buscar usuario
+        const user = state.db.users.find(u => u.email === email && u.pass === pass);
+        
+        if (user) {
+            state.currentUser = user;
+            // Cargar datos de la empresa guardados en el usuario o globales
+            nav.goTo('dashboard');
+        } else {
+            alert('Credenciales incorrectas o usuario no encontrado.');
+        }
+    },
+
+    guestLogin: () => {
+        state.currentUser = { role: 'guest', email: 'invitado@pintorpro.app' };
+        nav.goTo('dashboard');
+    },
+
+    register: () => {
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+
+        if (!email || !pass) return alert("Complete todos los campos");
+
+        const newUser = {
+            role: 'admin',
+            email: email,
+            pass: pass,
+            joined: new Date()
+        };
+
+        if (!state.db.users) state.db.users = [];
+        state.db.users.push(newUser);
+        
+        // Guardar email en settings para referencia
+        state.db.settings.company.email = email;
+        
+        storage.save();
+        alert('Registro exitoso. Por favor inicie sesión.');
+        ui.toggleAuthMode('login');
+    },
+
+    forgotPassword: () => {
+        alert("Si olvidaste tu contraseña, deberás reinstalar la aplicación o borrar los datos del navegador para reiniciar como administrador.");
+    },
+
+    logout: () => {
+        state.currentUser = null;
+        nav.goTo('auth'); // Ir a vista de autenticación
+        
+        // Limpiar campos
+        document.getElementById('login-pass').value = '';
+    }
+};
+
 // --- MÓDULO NAVEGACIÓN ---
 const nav = {
     goTo: (viewName) => {
