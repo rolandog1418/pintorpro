@@ -283,45 +283,23 @@ const est = {
         `;
         container.appendChild(div);
     },
+updateTotal: () => {
+        const base = state.currentCalc.price; 
+        let extras = 0;
+        
+        document.querySelectorAll('.task-price').forEach(inp => {
+            extras += parseFloat(inp.value) || 0;
+        });
 
-    updateTotal: () => {
-    const base = state.currentCalc.price; 
-    let extras = 0;
+        const total = base + extras;
 
-    const extrasRow = document.getElementById('est-extras-row');
-    const extrasDetail = document.getElementById('est-extras-detail');
-
-    extrasDetail.innerHTML = '';
-
-    const taskRows = document.querySelectorAll('.task-item');
-    const hasExtras = taskRows.length > 0;
-
-    taskRows.forEach(row => {
-        const desc = row.querySelector('.task-desc').value.trim();
-        const price = parseFloat(row.querySelector('.task-price').value) || 0;
-
-        extras += price;
-
-        if (desc || price > 0) {
-            const line = document.createElement('div');
-            line.textContent = `${desc || 'Tarea'} ----- $${price.toLocaleString()}`;
-            extrasDetail.appendChild(line);
-        }
-    });
-
-    // Renderizado condicional
-    extrasRow.style.display = hasExtras ? 'flex' : 'none';
-    extrasDetail.style.display = hasExtras ? 'block' : 'none';
-
-    const total = base + extras;
-
-    document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
-    document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
-    document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
-
-    return total;
-},
-
+        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+        document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
+        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+        
+        return total;
+    },
+    
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
         if (!client) return alert('El nombre es obligatorio');
