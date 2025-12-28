@@ -66,21 +66,30 @@ const storage = {
 };
 
 // --- MÓDULO PRINCIPAL (AUTH & APP) ---
+
+// --- MÓDULO PRINCIPAL (AUTH & APP) ---
 const app = {
     init: () => {
         storage.load();
-        
-        // Verificar usuarios existentes
-        const adminExists = state.db.users && state.db.users.length > 0;
-        
+
+        const users = state.db.users || [];
+        const adminExists = users.some(u => u.role === 'admin');
+
+        const btnRegister = document.getElementById('btn-show-register');
+        const btnGuest = document.querySelector('.auth-options button');
+
         if (!adminExists) {
+            // NO hay administrador
             ui.toggleAuthMode('register');
-            const btnGuest = document.getElementById('btn-show-register');
-            if(btnGuest) btnGuest.style.display = 'none';
+
+            if (btnRegister) btnRegister.style.display = 'block';
+            if (btnGuest) btnGuest.style.display = 'block';
+
         } else {
+            // SÍ hay administrador
             ui.toggleAuthMode('login');
-            const btnGuest = document.getElementById('btn-show-register');
-            if(btnGuest) btnGuest.style.display = 'none';
+
+            if (btnRegister) btnRegister.style.display = 'none';
         }
     },
 
@@ -88,12 +97,11 @@ const app = {
         const email = document.getElementById('login-email').value;
         const pass = document.getElementById('login-pass').value;
 
-        // Buscar usuario
-        const user = state.db.users.find(u => u.email === email && u.pass === pass);
-        
+        const user = (state.db.users || [])
+            .find(u => u.email === email && u.pass === pass);
+
         if (user) {
             state.currentUser = user;
-            // Cargar datos de la empresa guardados en el usuario o globales
             nav.goTo('dashboard');
         } else {
             alert('Credenciales incorrectas o usuario no encontrado.');
@@ -101,7 +109,10 @@ const app = {
     },
 
     guestLogin: () => {
-        state.currentUser = { role: 'guest', email: 'invitado@pintorpro.app' };
+        state.currentUser = {
+            role: 'guest',
+            email: 'invitado@pintorpro.app'
+        };
         nav.goTo('dashboard');
     },
 
@@ -109,35 +120,38 @@ const app = {
         const email = document.getElementById('reg-email').value;
         const pass = document.getElementById('reg-pass').value;
 
-        if (!email || !pass) return alert("Complete todos los campos");
+        if (!email || !pass) {
+            alert("Complete todos los campos");
+            return;
+        }
 
         const newUser = {
             role: 'admin',
-            email: email,
-            pass: pass,
+            email,
+            pass,
             joined: new Date()
         };
 
         if (!state.db.users) state.db.users = [];
         state.db.users.push(newUser);
-        
-        // Guardar email en settings para referencia
+
         state.db.settings.company.email = email;
-        
+
         storage.save();
-        alert('Registro exitoso. Por favor inicie sesión.');
+        alert('Administrador creado. Inicie sesión.');
+
         ui.toggleAuthMode('login');
     },
 
     forgotPassword: () => {
-        alert("Si olvidaste tu contraseña, deberás reinstalar la aplicación o borrar los datos del navegador para reiniciar como administrador.");
+        alert(
+            "Si olvidaste tu contraseña, deberás borrar los datos de la aplicación para volver a registrarte como administrador."
+        );
     },
 
     logout: () => {
         state.currentUser = null;
-        nav.goTo('auth'); // Ir a vista de autenticación
-        
-        // Limpiar campos
+        nav.goTo('auth');
         document.getElementById('login-pass').value = '';
     }
 };
