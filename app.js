@@ -262,8 +262,6 @@ const calc = {
 };
 
 // --- MÓDULO PRESUPUESTO ---
-
-        // --- MÓDULO PRESUPUESTO ---
 const est = {
     addTaskRow: (desc = '', price = '') => {
         const container = document.getElementById('additional-tasks-list');
@@ -272,102 +270,66 @@ const est = {
         div.style.display = 'flex';
         div.style.gap = '5px';
         div.style.marginBottom = '5px';
-
+        
         div.innerHTML = `
             <input type="text" class="task-desc" placeholder="Descrip." value="${desc}" style="flex:2;">
-            <input type="number" class="task-price" placeholder="$" value="${price}"
-                   oninput="est.updateTotal()" style="flex:1;">
-            <button class="btn-icon btn-danger"
-                    style="padding: 5px 10px;"
-                    onclick="this.parentElement.remove(); est.updateTotal()">x</button>
+            <input type="number" class="task-price" placeholder="$" value="${price}" oninput="est.updateTotal()" style="flex:1;">
+            <button class="btn-icon btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove(); est.updateTotal()">x</button>
         `;
         container.appendChild(div);
     },
-
     updateTotal: () => {
-        const base = state.currentCalc.price;
-        let extrasTotal = 0;
-
-        const extrasContainer = document.getElementById('est-extra-price');
-        extrasContainer.innerHTML = ''; // limpiar SIEMPRE
-
-        const tasks = [];
-
-        document.querySelectorAll('.task-item').forEach(row => {
-            const desc = row.querySelector('.task-desc').value.trim();
-            const price = parseFloat(row.querySelector('.task-price').value) || 0;
-
-            if (desc && price > 0) {
-                tasks.push({ desc, price });
-                extrasTotal += price;
-            }
+        const base = state.currentCalc.price; 
+        let extras = 0;
+        
+        document.querySelectorAll('.task-price').forEach(inp => {
+            extras += parseFloat(inp.value) || 0;
         });
 
-        // Base
-        document.getElementById('est-base-price').innerText =
-            '$' + base.toLocaleString();
+        const total = base + extras;
 
-        // Adicionales (solo si existen)
-        if (tasks.length > 0) {
-            const title = document.createElement('div');
-            title.innerHTML = '<b>Adicionales:</b>';
-            title.style.marginTop = '5px';
-            extrasContainer.appendChild(title);
-
-            tasks.forEach(t => {
-                const line = document.createElement('div');
-                line.style.display = 'flex';
-                line.style.justifyContent = 'space-between';
-
-                line.innerHTML = `
-                    <span>${t.desc}</span>
-                    <span>$${t.price.toLocaleString()}</span>
-                `;
-                extrasContainer.appendChild(line);
-            });
-        }
-
-        // Total general (SIN CAMBIOS)
-        const total = base + extrasTotal;
-        document.getElementById('est-total-final').innerText =
-            '$' + total.toLocaleString();
-
+        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+        document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
+        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+        
         return total;
     },
-
     saveEstimate: () => {
         const client = document.getElementById('est-client').value;
-        if (!client) return alert('El nombre es obligatorio');
+        if(!client) return alert('El nombre es obligatorio');
 
-        const total = est.updateTotal();
-
+        const total = est.updateTotal(); 
+        
+        // Recopilar items extras
         const extras = [];
         document.querySelectorAll('.task-item').forEach(row => {
-            const desc = row.querySelector('.task-desc').value.trim();
+            const desc = row.querySelector('.task-desc').value;
             const price = parseFloat(row.querySelector('.task-price').value) || 0;
-            if (desc && price > 0) extras.push({ desc, price });
+            if(desc || price > 0) {
+                extras.push({ desc, price });
+            }
         });
 
         const estimateData = {
             id: state.editId || Date.now(),
             date: new Date().toLocaleDateString(),
-            client,
+            client: client,
             address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
-            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)),
-            extras,
-            total
+            baseCalc: JSON.parse(JSON.stringify(state.currentCalc)), // Copia profunda
+            extras: extras,
+            total: total
         };
 
         if (!state.db.estimates) state.db.estimates = [];
 
         if (state.editId) {
             const index = state.db.estimates.findIndex(e => e.id === state.editId);
-            if (index !== -1) state.db.estimates[index] = estimateData;
+            if(index !== -1) state.db.estimates[index] = estimateData;
         } else {
             state.db.estimates.unshift(estimateData);
         }
-
+        
         storage.save();
         nav.goTo('history');
     }
@@ -595,181 +557,4 @@ const hist = {
         hist.selectedIndexes = [];
         document.querySelectorAll('.history-check').forEach(ch => ch.checked = false);
         hist.updateActionBar();
-    },
-
-    updateActionBar: () => {
-        let bar = document.getElementById('history-actions');
-        if (bar) {
-            bar.style.display = hist.selectedIndexes.length > 0 ? 'flex' : 'none';
-        }
-    }
-};
-
-// --- MÓDULO CONFIGURACIÓN ---
-const settings = {
-    loadToForm: () => {
-        const s = state.db.settings;
-        document.getElementById('set-company').value = s.company.name || '';
-        document.getElementById('set-email').value = s.company.email || '';
-        document.getElementById('set-address').value = s.company.address || '';
-        document.getElementById('set-phone').value = s.company.phone || '';
-        
-        // Colores
-        document.getElementById('set-bg-color').value = s.theme.bgColor || '#f0f8ff';
-        document.getElementById('set-color-accent').value = s.theme.accent || '#4fc3f7';
-        document.getElementById('set-secondary-color').value = s.theme.secondary || '#0288d1';
-        
-        document.getElementById('font-size-display').innerText = (s.theme.fontSize || 16) + 'px';
-        document.getElementById('set-darkmode').checked = s.theme.darkMode;
-        
-        document.getElementById('set-price').value = s.pricePerUnit;
-        document.getElementById('set-coverage').value = s.coverage;
-    },
-    
-    saveAll: () => {
-        const s = state.db.settings;
-        s.company.name = document.getElementById('set-company').value;
-        s.company.address = document.getElementById('set-address').value;
-        s.company.phone = document.getElementById('set-phone').value;
-        
-        // Guardar colores
-        s.theme.bgColor = document.getElementById('set-bg-color').value;
-        s.theme.accent = document.getElementById('set-color-accent').value;
-        s.theme.secondary = document.getElementById('set-secondary-color').value;
-        
-        s.theme.darkMode = document.getElementById('set-darkmode').checked;
-        s.theme.fontSize = parseInt(document.getElementById('font-size-display').innerText);
-        
-        // Password
-        const newPass = document.getElementById('set-password').value;
-        if(newPass && state.currentUser && state.currentUser.role === 'admin') {
-            state.currentUser.pass = newPass;
-            const idx = state.db.users.findIndex(u => u.email === state.currentUser.email);
-            if(idx !== -1) state.db.users[idx].pass = newPass;
-            alert('Contraseña actualizada');
-            document.getElementById('set-password').value = '';
-        }
-
-        s.pricePerUnit = parseFloat(document.getElementById('set-price').value) || s.pricePerUnit;
-        s.coverage = parseFloat(document.getElementById('set-coverage').value) || s.coverage;
-
-        storage.save();
-        settings.applyTheme();
-        alert('Configuración Guardada');
-        nav.goTo('dashboard');
-    },
-    
-    handleLogoUpload: (input) => {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Comprimir o limitar tamaño sería ideal, pero guardamos directo
-                state.db.settings.company.logo = e.target.result; 
-                document.getElementById('header-logo').src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    },
-    
-    adjustFont: (delta) => {
-        let current = state.db.settings.theme.fontSize || 16;
-        let newSize = current + delta;
-        if(newSize < 12) newSize = 12;
-        if(newSize > 24) newSize = 24;
-        
-        state.db.settings.theme.fontSize = newSize;
-        document.getElementById('font-size-display').innerText = newSize + 'px';
-        document.documentElement.style.setProperty('--base-font-size', newSize + 'px');
-    },
-    
-    toggleDarkMode: () => {
-        // Previsualización inmediata
-        const isDark = document.getElementById('set-darkmode').checked;
-        if(isDark) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    },
-    
-    updatePreview: () => {
-        const bgColor = document.getElementById('set-bg-color').value;
-        const pastelColor = settings.hexToPastel(bgColor);
-        document.documentElement.style.setProperty('--primary-bg', pastelColor);
-
-        const accentColor = document.getElementById('set-color-accent').value;
-        document.documentElement.style.setProperty('--accent-color', accentColor);
-
-        const secondaryColor = document.getElementById('set-secondary-color').value;
-        document.documentElement.style.setProperty('--secondary-accent', secondaryColor);
-        document.documentElement.style.setProperty('--border-color', settings.lightenColor(secondaryColor, 40));
-    },
-    
-    hexToPastel: (hex) => {
-        if(!hex || hex.length < 7) return hex;
-        let r = parseInt(hex.slice(1, 3), 16);
-        let g = parseInt(hex.slice(3, 5), 16);
-        let b = parseInt(hex.slice(5, 7), 16);
-
-        // Mezclar con blanco para hacer pastel
-        r = Math.min(255, Math.floor(r + (255 - r) * 0.7));
-        g = Math.min(255, Math.floor(g + (255 - g) * 0.7));
-        b = Math.min(255, Math.floor(b + (255 - b) * 0.7));
-
-        return `rgb(${r}, ${g}, ${b})`;
-    },
-    
-    lightenColor: (hex, percent) => {
-        if(!hex || hex.length < 7) return hex;
-        let r = parseInt(hex.slice(1, 3), 16);
-        let g = parseInt(hex.slice(3, 5), 16);
-        let b = parseInt(hex.slice(5, 7), 16);
-
-        r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
-        g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
-        b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
-
-        return `rgb(${r}, ${g}, ${b})`;
-    },
-    
-    applyTheme: () => {
-        const s = state.db.settings.theme;
-        
-        const pastelBg = settings.hexToPastel(s.bgColor || '#f0f8ff');
-        document.documentElement.style.setProperty('--primary-bg', pastelBg);
-        
-        document.documentElement.style.setProperty('--accent-color', s.accent);
-        document.documentElement.style.setProperty('--secondary-accent', s.secondary);
-        document.documentElement.style.setProperty('--base-font-size', (s.fontSize || 16) + 'px');
-        
-        const lightBorder = settings.lightenColor(s.secondary, 40);
-        document.documentElement.style.setProperty('--border-color', lightBorder);
-        
-        if(s.darkMode) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-        
-        document.getElementById('header-company-name').innerText = state.db.settings.company.name || 'Mi Empresa';
-        if(state.db.settings.company.logo) {
-            document.getElementById('header-logo').src = state.db.settings.company.logo;
-        }
-    }
-};
-
-// --- UI HELPERS ---
-const ui = {
-    toggleAuthMode: (mode) => {
-        if(mode === 'register') {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
-        } else {
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-        }
-    }
-};
-
-// --- INICIALIZACIÓN ---
-// --- INICIALIZACIÓN ---
-// Usamos DOMContentLoaded para que la app inicie INSTANTÁNEAMENTE
-// sin esperar a que carguen las librerías externas o imágenes pesadas.
-document.addEventListener('DOMContentLoaded', function() {
-    app.init();
-});
-
+  
