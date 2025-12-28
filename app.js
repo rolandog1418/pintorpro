@@ -257,7 +257,43 @@ const calc = {
         document.getElementById('btn-save-est').innerText = "Guardar";
         
         nav.goTo('estimate');
-        est.updateTotal();
+            updateTotal: () => {
+        // 1. Obtener base asegurando que sea número
+        const base = state.currentCalc.price || 0; 
+        let extras = 0;
+        
+        // 2. Sumar extras
+        document.querySelectorAll('.task-price').forEach(inp => {
+            extras += parseFloat(inp.value) || 0;
+        });
+
+        const total = base + extras;
+
+        // 3. Actualizar textos
+        const baseEl = document.getElementById('est-base-price');
+        const extraEl = document.getElementById('est-extra-price');
+        const totalEl = document.getElementById('est-total-final');
+        const rowAdicionales = document.getElementById('row-adicionales');
+
+        if(baseEl) baseEl.innerText = '$' + base.toLocaleString();
+        if(totalEl) totalEl.innerText = '$' + total.toLocaleString();
+
+        // 4. Lógica Mágica: Mostrar u Ocultar fila
+        if (rowAdicionales && extraEl) {
+            if (extras > 0) {
+                // Si hay extras, mostramos la fila con display: flex 
+                // para respetar la alineación (texto izq - precio der)
+                rowAdicionales.style.display = 'flex';
+                extraEl.innerText = '$' + extras.toLocaleString();
+            } else {
+                // Si es 0, ocultamos todo
+                rowAdicionales.style.display = 'none';
+            }
+        }
+        
+        return total;
+    },
+                
     }
 };
 
