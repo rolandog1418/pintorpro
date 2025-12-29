@@ -288,6 +288,12 @@ const calc = {
         document.getElementById('est-phone').value = "";
         document.getElementById('additional-tasks-list').innerHTML = "";
         document.getElementById('btn-save-est').innerText = "Guardar";
+
+        setTimeout(() => {
+    ui.enableAutocomplete('est-client', state.db.clientIndex.names);
+    ui.enableAutocomplete('est-address', state.db.clientIndex.addresses);
+    ui.enableAutocomplete('est-phone', state.db.clientIndex.phones);
+}, 0);
         
         nav.goTo('estimate');
         est.updateTotal();
