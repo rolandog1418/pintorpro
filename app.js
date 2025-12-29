@@ -288,9 +288,18 @@ const est = {
 
         const total = base + extras;
 
-        document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+document.getElementById('est-base-price').innerText = '$' + base.toLocaleString();
+    document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+
+    // 👇 Mostrar u ocultar "Adicionales"
+    const extraRow = document.getElementById('row-adicionales');
+    if (extras > 0) {
+        extraRow.style.display = 'flex';
         document.getElementById('est-extra-price').innerText = '$' + extras.toLocaleString();
-        document.getElementById('est-total-final').innerText = '$' + total.toLocaleString();
+    } else {
+        extraRow.style.display = 'none';
+    }
+        
         
         return total;
     },
