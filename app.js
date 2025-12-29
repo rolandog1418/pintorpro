@@ -9,6 +9,9 @@ const state = {
     db: {
         users: [], // {email, pass, companyData...}
         estimates: [], // {id, client, date, total, items...}
+        clients: {
+    // nombreCliente: { code: '8231', count: 2 }
+},
         settings: {
             pricePerUnit: 1500, // Precio base defecto
             coverage: 10,       // 10m2 por litro
