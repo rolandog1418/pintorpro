@@ -67,7 +67,29 @@ const storage = {
         localStorage.setItem('pintorProDB', JSON.stringify(state.db));
     }
 };
+function getClientCode(clientName) {
+    if (!state.db.clients) state.db.clients = {};
 
+    // Si el cliente no existe → crear código fijo
+    if (!state.db.clients[clientName]) {
+        const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+        state.db.clients[clientName] = {
+            code: randomCode,
+            count: 0
+        };
+    }
+
+    // Incrementar contador
+    state.db.clients[clientName].count += 1;
+
+    // Guardar cambios
+    storage.save();
+
+    const client = state.db.clients[clientName];
+    const countFormatted = client.count.toString().padStart(2, '0');
+
+    return client.code + countFormatted;
+}
 // --- MÓDULO PRINCIPAL (AUTH & APP) ---
 const app = {
     init: () => {
