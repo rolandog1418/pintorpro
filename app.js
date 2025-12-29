@@ -462,6 +462,9 @@ const hist = {
 
         const item = state.db.estimates[index];
         if (!item) return;
+        // Prefijo aleatorio de 3 cifras (nuevo en cada PDF)
+const pdfPrefix = Math.floor(100 + Math.random() * 900).toString();
+const fullCode = pdfPrefix + item.code;
 
         const company = state.db.settings.company || {};
         const left = 15;
