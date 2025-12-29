@@ -816,6 +816,21 @@ const autocomplete = {
             .map(i => i[0]);
     }
 };
+
+// --- UI HELPERS ---
+const ui = {
+    toggleAuthMode: (mode) => {
+        if(mode === 'register') {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        } else {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+    }
+};
+
+// --- INICIALIZACIÓN ---
 enableAutocomplete(inputId, sourceMap) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -865,20 +880,6 @@ enableAutocomplete(inputId, sourceMap) {
         });
     }
 }
-// --- UI HELPERS ---
-const ui = {
-    toggleAuthMode: (mode) => {
-        if(mode === 'register') {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
-        } else {
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-        }
-    }
-};
-
-// --- INICIALIZACIÓN ---
 // --- INICIALIZACIÓN ---
 // Usamos DOMContentLoaded para que la app inicie INSTANTÁNEAMENTE
 // sin esperar a que carguen las librerías externas o imágenes pesadas.
