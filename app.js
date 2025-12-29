@@ -816,19 +816,7 @@ const autocomplete = {
             .map(i => i[0]);
     }
 };
-
-// --- UI HELPERS ---
-const ui = {
-    toggleAuthMode: (mode) => {
-        if(mode === 'register') {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
-        } else {
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-        }
-    }
-    enableAutocomplete(inputId, sourceMap) {
+enableAutocomplete(inputId, sourceMap) {
     const input = document.getElementById(inputId);
     if (!input) return;
 
@@ -877,6 +865,17 @@ const ui = {
         });
     }
 }
+// --- UI HELPERS ---
+const ui = {
+    toggleAuthMode: (mode) => {
+        if(mode === 'register') {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        } else {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+    }
 };
 
 // --- INICIALIZACIÓN ---
