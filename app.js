@@ -827,7 +827,56 @@ const ui = {
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('register-form').classList.add('hidden');
         }
+    },
+    enableAutocomplete(inputId, sourceMap) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    let list;
+
+    input.addEventListener('focus', () => {
+        list = document.createElement('div');
+        list.style.position = 'absolute';
+        list.style.background = 'var(--card-bg)';
+        list.style.border = '1px solid var(--border-color)';
+        list.style.borderRadius = '8px';
+        list.style.zIndex = 999;
+        list.style.width = input.offsetWidth + 'px';
+        list.style.maxHeight = '150px';
+        list.style.overflowY = 'auto';
+
+        input.parentElement.appendChild(list);
+        render('');
+    });
+
+    input.addEventListener('input', e => {
+        render(e.target.value);
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => list?.remove(), 200);
+    });
+
+    function render(value) {
+        if (!list) return;
+        list.innerHTML = '';
+
+        const items = autocomplete.getSuggestions(sourceMap, value);
+        items.forEach(text => {
+            const div = document.createElement('div');
+            div.innerText = text;
+            div.style.padding = '8px';
+            div.style.cursor = 'pointer';
+
+            div.onclick = () => {
+                input.value = text;
+                list.remove();
+            };
+
+            list.appendChild(div);
+        });
     }
+                }
 };
 
 // --- INICIALIZACIÓN ---
