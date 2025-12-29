@@ -483,6 +483,11 @@ const fullCode = pdfPrefix + item.code;
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
         doc.text(company.name || 'Presupuesto', left + 35, y + 8);
+        // Código en esquina superior derecha
+doc.setFontSize(10);
+doc.setFont("helvetica", "bold");
+doc.text(`Código: ${fullCode}`, 195, y + 8, { align: 'right' });
+doc.setFont("helvetica", "normal");
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
