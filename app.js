@@ -12,6 +12,11 @@ const state = {
         clients: {
     // nombreCliente: { code: '8231', count: 2 }
 },
+        clientIndex: {
+    names: {},      // { "Juan Perez": 3 }
+    addresses: {},  // { "Av Siempre Viva 123": 2 }
+    phones: {}      // { "1122334455": 5 }
+        }
         settings: {
             pricePerUnit: 1500, // Precio base defecto
             coverage: 10,       // 10m2 por litro
