@@ -344,10 +344,13 @@ document.getElementById('est-base-price').innerText = '$' + base.toLocaleString(
             }
         });
 
-        const estimateData = {
-            id: state.editId || Date.now(),
-            date: new Date().toLocaleDateString(),
-            client: client,
+        const uniqueCode = getClientCode(client);
+
+const estimateData = {
+    id: state.editId || Date.now(),
+    code: uniqueCode,
+    date: new Date().toLocaleDateString(),
+    client: client,
             address: document.getElementById('est-address').value,
             phone: document.getElementById('est-phone').value,
             baseCalc: JSON.parse(JSON.stringify(state.currentCalc)), // Copia profunda
