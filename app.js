@@ -9,8 +9,11 @@ const state = {
     db: {
         users: [], // {email, pass, companyData...}
         estimates: [], // {id, client, date, total, items...}
-        clients: {
-    // nombreCliente: { code: '8231', count: 2 }
+        clients: {// "Juan Perez": {
+    //     count: 3,
+    //     address: ["Av Siempre Viva 123"],
+    //     phone: ["1122334455"]
+    // }
 },
         clientIndex: {
     names: {},      // { "Juan Perez": 3 }
