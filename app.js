@@ -374,6 +374,20 @@ const estimateData = {
         } else {
             state.db.estimates.unshift(estimateData);
         }
+
+        // ---- Actualizar índices de uso ----
+const idx = state.db.clientIndex;
+
+if (estimateData.client) {
+    idx.names[estimateData.client] = (idx.names[estimateData.client] || 0) + 1;
+}
+if (estimateData.address) {
+    idx.addresses[estimateData.address] = (idx.addresses[estimateData.address] || 0) + 1;
+}
+if (estimateData.phone) {
+    idx.phones[estimateData.phone] = (idx.phones[estimateData.phone] || 0) + 1;
+                                      }
+
         
         storage.save();
         nav.goTo('history');
