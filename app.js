@@ -496,6 +496,11 @@ const hist = {
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text(`Cliente: ${item.client}`, left, y);
+        y += 6;
+doc.setFontSize(10);
+doc.setFont("helvetica", "bold");
+doc.text(`Código: ${item.code}`, left, y);
+doc.setFont("helvetica", "normal");
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         doc.text(`Fecha: ${item.date}`, 150, y);
