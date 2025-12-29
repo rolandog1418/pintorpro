@@ -791,6 +791,26 @@ const settings = {
     }
 };
 
+const autocomplete = {
+    getSuggestions(map, value) {
+        if (!value) {
+            // Top 5 más usados
+            return Object.entries(map)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(i => i[0]);
+        }
+
+        const v = value.toLowerCase();
+
+        return Object.entries(map)
+            .filter(([k]) => k.toLowerCase().startsWith(v))
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(i => i[0]);
+    }
+};
+
 // --- UI HELPERS ---
 const ui = {
     toggleAuthMode: (mode) => {
