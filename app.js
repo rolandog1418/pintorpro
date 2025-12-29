@@ -488,13 +488,18 @@ const hist = {
         y += 10;
 
         // Item Principal
-        doc.setFont("helvetica", "normal");
-        const unit = item.baseCalc.isML ? 'ML' : 'm²';
-        const desc = `Pintura en sup. (${item.baseCalc.area} ${unit})`;
+        // Item Principal (precio SIN descuento)
+doc.setFont("helvetica", "normal");
+const unit = item.baseCalc.isML ? 'ML' : 'm²';
+const desc = `Pintura en sup. (${item.baseCalc.area} ${unit})`;
 
-        doc.text(desc, left + 2, y);
-        doc.text(`$${item.baseCalc.price.toLocaleString()}`, 170, y);
-        y += 8;
+// 👉 Precio original antes del descuento
+const precioBruto =
+    item.baseCalc.price + (item.baseCalc.discountAmount || 0);
+
+doc.text(desc, left + 2, y);
+doc.text(`$${precioBruto.toLocaleString()}`, 170, y);
+y += 8;
 
         // Descuento
         if (item.baseCalc.discountAmount > 0) {
