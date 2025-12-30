@@ -378,7 +378,26 @@ document.getElementById('est-base-price').innerText = '$' + base.toLocaleString(
                 extras.push({ desc, price });
             }
         });
+        // --- Guardar / actualizar cliente para autocompletado ---
+if (client) {
+    if (!state.db.clients[client]) {
+        state.db.clients[client] = {
+            count: 1,
+            addresses: [],
+            phones: []
+        };
+    } else {
+        state.db.clients[client].count++;
+    }
 
+    if (address && !state.db.clients[client].addresses.includes(address)) {
+        state.db.clients[client].addresses.push(address);
+    }
+
+    if (phone && !state.db.clients[client].phones.includes(phone)) {
+        state.db.clients[client].phones.push(phone);
+    }
+    }
         const uniqueCode = getClientCode(client);
 
 const estimateData = {
