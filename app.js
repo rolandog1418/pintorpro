@@ -301,6 +301,27 @@ const calc = {
 };
 
 // --- MÓDULO PRESUPUESTO ---
+// --- AUTOCOMPLETE ENGINE ---
+const autocomplete = {
+    getSuggestions(sourceMap, value) {
+        const entries = Object.entries(sourceMap || {});
+
+        if (!value) {
+            return entries
+                .sort((a, b) => (b[1].count || 0) - (a[1].count || 0))
+                .slice(0, 5)
+                .map(e => e[0]);
+        }
+
+        const v = value.toLowerCase();
+
+        return entries
+            .filter(([name]) => name.toLowerCase().startsWith(v))
+            .sort((a, b) => (b[1].count || 0) - (a[1].count || 0))
+            .slice(0, 5)
+            .map(e => e[0]);
+    }
+};
 const est = {
     addTaskRow: (desc = '', price = '') => {
         const container = document.getElementById('additional-tasks-list');
