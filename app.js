@@ -407,11 +407,11 @@ if (client) {
     if (address && !state.db.clients[client].addresses.includes(address)) {
         state.db.clients[client].addresses.push(address);
     }
-
+    }
     if (phone && !state.db.clients[client].phones.includes(phone)) {
         state.db.clients[client].phones.push(phone);
     }
-    }
+
 
         const uniqueCode = getClientCode(client);
 
